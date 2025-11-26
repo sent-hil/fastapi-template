@@ -1,0 +1,64 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: fastapi_template_db
+    ports:
+      - "5435:5432"
+    volumes:
+      - ./alembic/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - fastapi_template_postgres_17:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d fastapi_template_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  postgres_migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: uv run alembic upgrade head
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PG_DATABASE_URL: postgresql://user:password@postgres:5432/fastapi_template_db
+    volumes:
+      - .:/app
+  qdrant:
+    image: qdrant/qdrant:latest
+    restart: always
+    ports:
+      - "6332:6333"
+    volumes:
+      - fastapi_template_qdrant_1_15:/qdrant/storage
+    # healthcheck:
+    #   test: ["CMD-SHELL", "curl -f http://localhost:6333/dashboard || exit 1"]
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 3
+    #   start_period: 5s
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      PG_DATABASE_URL: postgresql://user:password@postgres:5432/fastapi_template_db
+      QDRANT_URL: http://qdrant:6333
+    ports:
+      - "9100:9100"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      postgres_migrate:
+        condition: service_completed_successfully
+    volumes:
+      - .:/app
+      - /app/.venv # ignore .venv in container, so you can run `uv sync` from outside without
+volumes:
+  fastapi_template_qdrant_1_15:
+  fastapi_template_postgres_17:
