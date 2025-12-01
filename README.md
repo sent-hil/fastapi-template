@@ -6,6 +6,7 @@ FastAPI Template
 * Search and replace `fastapi-template` with your project name.
 * Download and install [uv](https://docs.astral.sh/uv/#installation)
 * Install packages with `uv sync`
+* Rename `.env.sample` to `.env` and fill in the required environment variables.
 
 # Usage
 
@@ -29,12 +30,12 @@ psql -h localhost -p 5435 -U user -d fastapi_template # connect to the database,
 
 Add or remove a package
 ```bash
-docker compose exec uv add <package_name>
-docker compose exec uv sync
+docker compose exec api uv add <package_name>
+docker compose exec api uv sync
 
-docker compose exec uv remove <package_name>
+docker compose exec api uv remove <package_name>
 
-docker compose exec uv add <package_name> --dev # add a package as a development dependency
+docker compose exec api uv add <package_name> --dev # add a package as a development dependency
 ```
 
 ### Precommit
