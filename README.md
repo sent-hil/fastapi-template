@@ -23,9 +23,9 @@ Visit [http://localhost:9100](http://localhost:9100) to access the API.
 Database:
 
 ```bash
-docker compose exec uv run alembic revision --autogenerate -m <msg> # create a new migration
+docker compose exec api uv run alembic revision --autogenerate -m <msg> # create a new migration
 docker compose exec api uv run alembic upgrade head # run migrations
-psql -h localhost -p 5435 -U user -d fastapi_template # connect to the database, see `docker-compose.yml` for password
+docker compose exec postgres psql -h localhost -p 5432 -U user -d fastapi_template_db
 ```
 
 Add or remove a package
